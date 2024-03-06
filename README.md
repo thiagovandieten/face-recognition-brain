@@ -4,9 +4,9 @@ I'm creating this as part of a course by Zero to Mastery. I have however done a 
 - I'm using Vite instead of Create React App
 - I am rendering the squares by using the HTML Canvas API.
    
-This projects requires a .env file with the following content:
+This projects requires a `.env` file in root with the following content:
 ```
-VITE_CLARIFY_PAT_KEY="YOUR_CLARIFY_PAT_KEY"
+VITE_CLARIFY_PAT_KEY="YOUR_CLARIFY_PAT;_KEY"
 ```
 
 ## Credits
