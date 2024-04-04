@@ -5,12 +5,17 @@ import Logo from './components/Logo/Logo'
 import ImageLinkForm from './components/ImageLinkForm/ImageLinkForm'
 import Rank from './components/Rank/Rank'
 import FaceRecognition from './components/FaceRecognition/FaceRecognition'
+import SignIn from './components/SignIn/SignIn'
+import Register from './components/Register/Register'
 import './App.css'
+
 function App() {
 
   const [input, setInput] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   // const [faceBoxes, setFaceBoxes] = useState({});
+  const [route, setRoute] = useState('signin');
+  const [isSignedIn, setIsSignedIn] = useState(false);
 
   const MODEL_ID = 'face-detection';
 
@@ -58,16 +63,17 @@ function App() {
   }
 
   useEffect(() => {
-    if(imageUrl) {
+    if (imageUrl) {
       (async () => {
         drawFaceBoxes();
       })();
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      }}, [imageUrl]);  
+    }
+  }, [imageUrl]);
 
   const fetchFaceBoxes = async () => {
-    if(!imageUrl) return true;
-    
+    if (!imageUrl) return true;
+
     return fetch("https://api.clarifai.com/v2/models/" + MODEL_ID + "/outputs", returnRequestOptions())
       .then(response => response.json())
       .then(result => {
@@ -82,7 +88,7 @@ function App() {
       })
       .catch(error => console.log('error', error))
   }
-  
+
   function calculateBoxPositions(boundingBoxCordinates) {
     const imageOnPage = document.getElementById('image-face')
     const width = Number(imageOnPage.width)
@@ -128,15 +134,30 @@ function App() {
     console.log("hi");
   }
 
+  const onRouteChange = (route) => {
+    if (route === 'signout') {
+      setIsSignedIn(false);
+    } else if (route === 'home') {
+      setIsSignedIn(true);
+    }
+    setRoute(route);
+  }
 
   return (
     <>
       <ParticlesBg type="cobweb" bg={true} />
-      <Navigation />
+      <Navigation onRouteChange={onRouteChange} isSignedIn={isSignedIn} />
       <Logo />
-      <Rank />
-      <ImageLinkForm onInputChange={onInputChange} onButtonSubmit={onSubmit} />
-      <FaceRecognition imageUrl={imageUrl} />
+      {(route === "signin") ? <SignIn onRouteChange={onRouteChange} /> : null}
+      {(route === "register") ? <Register onRouteChange={onRouteChange} /> : null}
+      {(route === "home") ?
+        <>
+          <Rank />
+          <ImageLinkForm onInputChange={onInputChange} onButtonSubmit={onSubmit} />
+          <FaceRecognition imageUrl={imageUrl} />
+        </>
+        : null}
+
     </>
   )
 
