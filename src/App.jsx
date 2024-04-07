@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import ParticlesBg from 'particles-bg'
 import Navigation from './components/Navigation/Navigation'
 import Logo from './components/Logo/Logo'
@@ -13,6 +13,8 @@ function App() {
 
   const [input, setInput] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const previousImageUrl = useRef('');
+  const [boundingBoxCordinates, setboundingBoxCordinates] = useState([]);
   // const [faceBoxes, setFaceBoxes] = useState({});
   const [route, setRoute] = useState('signin');
   const [isSignedIn, setIsSignedIn] = useState(false);
@@ -63,9 +65,11 @@ function App() {
   }
 
   useEffect(() => {
-    if (imageUrl) {
+    // send image URL to Clarifai API
+    if (imageUrl && imageUrl !== previousImageUrl.current) {
       (async () => {
-        drawFaceBoxes();
+        setboundingBoxCordinates(await fetchFaceBoxes());
+        previousImageUrl.current = imageUrl;
       })();
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }
@@ -87,44 +91,6 @@ function App() {
         return faceBoxes;
       })
       .catch(error => console.log('error', error))
-  }
-
-  function calculateBoxPositions(boundingBoxCordinates) {
-    const imageOnPage = document.getElementById('image-face')
-    const width = Number(imageOnPage.width)
-    const height = Number(imageOnPage.height)
-    console.log(`Width: ${width}, Height: ${height}`)
-    const boxPositions = boundingBoxCordinates.map(faceBox => {
-      return {
-        x: faceBox.left_col * width,
-        y: faceBox.top_row * height,
-        width: (faceBox.right_col * width) - (faceBox.left_col * width),
-        height: (faceBox.bottom_row * height) - (faceBox.top_row * height)
-      }
-    });
-    return boxPositions;
-  }
-
-  const displayFaceBoxes = (boxPositions) => {
-    const imageOnPage = document.getElementById('image-face')
-    const canvas = document.getElementById('face-boxes')
-    canvas.width = imageOnPage.width
-    canvas.height = imageOnPage.height
-    const ctx = canvas.getContext('2d')
-    boxPositions.forEach(box => {
-      ctx.beginPath();
-      ctx.rect(box.x, box.y, box.width, box.height);
-      ctx.strokeStyle = '#0000FF';
-      ctx.strokeWidth = 3;
-      ctx.stroke();
-    })
-  }
-
-  const drawFaceBoxes = async () => {
-    const boundingBoxCordinates = await fetchFaceBoxes();
-    // const boundingBoxCordinates = preCalcBoxes;
-    const boxPositions = calculateBoxPositions(boundingBoxCordinates)
-    displayFaceBoxes(boxPositions);
   }
 
   const onInputChange = (event) => setInput(event.target.value);
@@ -154,7 +120,7 @@ function App() {
         <>
           <Rank />
           <ImageLinkForm onInputChange={onInputChange} onButtonSubmit={onSubmit} />
-          <FaceRecognition imageUrl={imageUrl} />
+          <FaceRecognition imageUrl={imageUrl} boundingBoxCordinates={boundingBoxCordinates} />
         </>
         : null}
 
