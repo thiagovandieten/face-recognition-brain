@@ -18,6 +18,13 @@ function App() {
   // const [faceBoxes, setFaceBoxes] = useState({});
   const [route, setRoute] = useState('signin');
   const [isSignedIn, setIsSignedIn] = useState(false);
+  const [user, setUser] = useState({
+    id: '',
+    name: '',
+    email: '',
+    entries: 0,
+    joined: ''
+  });
 
   const MODEL_ID = 'face-detection';
 
