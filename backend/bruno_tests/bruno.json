@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Face-recognition-brain",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

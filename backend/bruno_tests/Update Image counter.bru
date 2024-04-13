@@ -1,0 +1,17 @@
+meta {
+  name: Update Image counter
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{host}}/image
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "id": 123
+  }
+}
