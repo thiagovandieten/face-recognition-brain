@@ -97,7 +97,6 @@ function App() {
 
   const onSubmit = () => {
     setImageUrl(input);
-    console.log("hi");
   }
 
   const onRouteChange = (route) => {
