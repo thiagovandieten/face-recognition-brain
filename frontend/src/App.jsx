@@ -11,7 +11,7 @@ import './App.css'
 
 function App() {
 
-  const [input, setInput] = useState('');
+  const input = useRef('');
   const [imageUrl, setImageUrl] = useState('');
   const previousImageUrl = useRef('');
   const [boundingBoxCordinates, setboundingBoxCordinates] = useState([]);
@@ -71,12 +71,24 @@ function App() {
     return requestOptions;
   }
 
+  const updateEntries = () => {
+    fetch('http://localhost:3000/image', {
+      method: 'PUT',
+      body: JSON.stringify({ id: user.id }),
+      headers: { 'Content-Type': 'application/json' }
+    }).then(res => res.json())
+      .then(count => {
+        setUser({ ...user, entries: count });
+      })
+      .catch(console.log);
+  }
+
   useEffect(() => {
     // send image URL to Clarifai API
     if (imageUrl && imageUrl !== previousImageUrl.current) {
       (async () => {
         setboundingBoxCordinates(await fetchFaceBoxes());
-        previousImageUrl.current = imageUrl;
+        previousImageUrl.current = imageUrl; //Doesn't update the state becaiuse it seems it's undefined here
       })();
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }
@@ -86,8 +98,12 @@ function App() {
     if (!imageUrl) return true;
 
     return fetch("https://api.clarifai.com/v2/models/" + MODEL_ID + "/outputs", returnRequestOptions())
-      .then(response => response.json())
+      .then((response) => {
+        return response.json()
+      }
+      )
       .then(result => {
+
         // const BoundingBox = result.outputs[0].data.regions[0].region_info.bounding_box;
         // console.log(`Bounding box: ${BoundingBox}`);
         console.log(`Result boxes: ${result}`);
@@ -100,19 +116,30 @@ function App() {
       .catch(error => console.log('error', error))
   }
 
-  const onInputChange = (event) => setInput(event.target.value);
+  const onInputChange = (event) => input.current = event.target.value;
 
-  const onSubmit = () => {
-    setImageUrl(input);
+  const onLinkSubmit = () => {
+    setImageUrl(input.current);
+    updateEntries();
   }
 
   const onRouteChange = (route) => {
     if (route === 'signout') {
       setIsSignedIn(false);
-    } else if (route === 'home') {
+    } else if (route === 'home' && typeof (user.id) === "number") {
       setIsSignedIn(true);
     }
     setRoute(route);
+  }
+
+  const loadUser = (user) => {
+    setUser({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      entries: user.entries,
+      joined: user.joined
+    });
   }
 
   return (
@@ -120,15 +147,15 @@ function App() {
       <ParticlesBg type="cobweb" bg={true} />
       <Navigation onRouteChange={onRouteChange} isSignedIn={isSignedIn} />
       <Logo />
-      {(route === "signin") ? <SignIn onRouteChange={onRouteChange} /> : null}
-      {(route === "register") ? <Register onRouteChange={onRouteChange} /> : null}
-      {(route === "home") ?
+      {(route === "signin") && <SignIn onRouteChange={onRouteChange} loadUser={loadUser} />}
+      {(route === "register") && <Register onRouteChange={onRouteChange} />}
+      {(route === "home") &&
         <>
-          <Rank />
-          <ImageLinkForm onInputChange={onInputChange} onButtonSubmit={onSubmit} />
+          <Rank name={user.name} entries={user.entries} />
+          <ImageLinkForm onInputChange={onInputChange} onButtonSubmit={onLinkSubmit} />
           <FaceRecognition imageUrl={imageUrl} boundingBoxCordinates={boundingBoxCordinates} />
         </>
-        : null}
+      }
 
     </>
   )

@@ -1,6 +1,6 @@
 import { useRef } from "react";
 
-const SignIn = ({ onRouteChange }) => {
+const SignIn = ({ onRouteChange, loadUser }) => {
     const email = useRef('');
     const password = useRef('');
 
@@ -30,7 +30,12 @@ const SignIn = ({ onRouteChange }) => {
                     return new Error('error logging in')
                 }
             })
-            .then(console.log)
+            .then((user) => {
+                if(user.id) {
+                    loadUser(user);
+                    onRouteChange('home')  
+                }
+            } )
             .catch(console.log);
     };
 
